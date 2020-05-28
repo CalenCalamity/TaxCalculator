@@ -43,10 +43,10 @@ namespace TaxCalculator.Data
 
             var postalCodes = new PostalCode[]
             {
-                new PostalCode{ Value="7441", TaxType = context.TaxTypes.ToList().Where(x => x.Code.Equals("PGRSV")).FirstOrDefault(), CreatedBy = "System", LastModifiedBy = "System", CreatedDate = DateTime.Now, LastModifiedDate = DateTime.Now},
-                new PostalCode{ Value="A100", TaxType = context.TaxTypes.ToList().Where(x => x.Code.Equals("FLVL")).FirstOrDefault(), CreatedBy = "System", LastModifiedBy = "System", CreatedDate = DateTime.Now, LastModifiedDate = DateTime.Now},
-                new PostalCode{ Value="7000", TaxType = context.TaxTypes.ToList().Where(x => x.Code.Equals("FLRT")).FirstOrDefault(), CreatedBy = "System", LastModifiedBy = "System", CreatedDate = DateTime.Now, LastModifiedDate = DateTime.Now},
-                new PostalCode{ Value="1000", TaxType = context.TaxTypes.ToList().Where(x => x.Code.Equals("PGRSV")).FirstOrDefault(), CreatedBy = "System", LastModifiedBy = "System", CreatedDate = DateTime.Now, LastModifiedDate = DateTime.Now}
+                new PostalCode{ Value="7441", TaxTypeID = context.TaxTypes.ToList().Where(x => x.Code.Equals("PGRSV")).FirstOrDefault().TaxTypeID, CreatedBy = "System", LastModifiedBy = "System", CreatedDate = DateTime.Now, LastModifiedDate = DateTime.Now},
+                new PostalCode{ Value="A100", TaxTypeID = context.TaxTypes.ToList().Where(x => x.Code.Equals("FLVL")).FirstOrDefault().TaxTypeID, CreatedBy = "System", LastModifiedBy = "System", CreatedDate = DateTime.Now, LastModifiedDate = DateTime.Now},
+                new PostalCode{ Value="7000", TaxTypeID = context.TaxTypes.ToList().Where(x => x.Code.Equals("FLRT")).FirstOrDefault().TaxTypeID, CreatedBy = "System", LastModifiedBy = "System", CreatedDate = DateTime.Now, LastModifiedDate = DateTime.Now},
+                new PostalCode{ Value="1000", TaxTypeID = context.TaxTypes.ToList().Where(x => x.Code.Equals("PGRSV")).FirstOrDefault().TaxTypeID, CreatedBy = "System", LastModifiedBy = "System", CreatedDate = DateTime.Now, LastModifiedDate = DateTime.Now}
             };
 
             postalCodes.ToList().ForEach(x => context.PostalCodes.Add(x));
