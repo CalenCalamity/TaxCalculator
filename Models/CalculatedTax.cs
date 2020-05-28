@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 
 namespace TaxCalculator.Models
 {
-    public class PostalCode
+    public class CalculatedTax
     {
-        public int PostalCodeID { get; set; }
-        public string Value { get; set; }
-        public int TaxTypeID { get; set; }
+        public int CalculatedTaxID { get; set; }
+        public double Value { get; set; }
+        public PostalCode PostalCode { get; set; }
 
         public DateTime CreatedDate { get; set; }
         public DateTime LastModifiedDate { get; set; }

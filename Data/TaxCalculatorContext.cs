@@ -16,12 +16,14 @@ namespace TaxCalculator.Data
         public DbSet<PostalCode> PostalCodes { get; set; }
         public DbSet<TaxType> TaxTypes { get; set; }
         public DbSet<ProgressiveTax> ProgressiveTaxes { get; set; }
+        public DbSet<CalculatedTax> CalculatedTaxes { get; set; }
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<PostalCode>().ToTable("PostalCode");
             modelBuilder.Entity<TaxType>().ToTable("TaxType");
             modelBuilder.Entity<ProgressiveTax>().ToTable("ProgressiveTax");
+            modelBuilder.Entity<CalculatedTax>().ToTable("CalculatedTax");
         }
     }
 }
