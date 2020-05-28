@@ -10,14 +10,18 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using TaxCalculator.Data;
+using TaxCalculator.Controllers;
 using TaxCalculator.Models;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using SQLitePCL;
 
 namespace TaxCalculator.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly TaxCalculatorContext _context;
+        private readonly  TaxCalculatorContext _context;
 
         public HomeController(ILogger<HomeController> logger, TaxCalculatorContext context)
         {
@@ -27,11 +31,25 @@ namespace TaxCalculator.Controllers
 
         public IActionResult Index()
         {
+            #region ViewBag 
+
+            List<SelectListItem> postCodes = new List<SelectListItem>();
+            _context.PostalCodes.ToList<PostalCode>().ForEach(x => postCodes.Add(new SelectListItem { Text = x.Value, Value = x.Value.ToString() }));
+
+            ViewBag.PostCodes = postCodes;
+
+            #endregion
+
             return View();
         }
 
-        public double CalculateTax(string postalCode, double annualIncome, ref StringBuilder errorLog)
+        [HttpPost, ValidateAntiForgeryToken]
+        public IActionResult CalculateTax(InputModel model)
         {
+            string postalCode = model.PostCode;
+            double annualIncome = model.AnnualIncome;
+
+            StringBuilder errorLog = new StringBuilder();
             double calculatedTax = 0;
 
             try
@@ -48,7 +66,7 @@ namespace TaxCalculator.Controllers
 
                     case "PGRSV":
                         IList<ProgressiveTax> ApplicableTaxes = _context.ProgressiveTaxes.ToList().Where(x => x.From < annualIncome).OrderByDescending(x => x.To).ToList<ProgressiveTax>();
-                        
+
                         bool maxRate = true;
                         List<double> finalList = new List<double>();
 
@@ -57,7 +75,7 @@ namespace TaxCalculator.Controllers
                             if (maxRate)
                             {
                                 double toAdd = ApplicableTaxes.Count == 1 ? (annualIncome - item.From) * item.Rate : ((annualIncome - (item.From - 1)) * item.Rate);
-                                finalList.Add(toAdd); 
+                                finalList.Add(toAdd);
                                 maxRate = false;
                             }
                             else
@@ -69,7 +87,7 @@ namespace TaxCalculator.Controllers
                             }
                         }
 
-                        calculatedTax = finalList.Sum();  
+                        calculatedTax = Math.Round(finalList.Sum(), 2);
                         break;
 
                     default:
@@ -79,9 +97,13 @@ namespace TaxCalculator.Controllers
             }
             catch (Exception e) { errorLog.Append(e.InnerException); }
 
-            return calculatedTax;
-        }
+            _context.CalculatedTaxes.Add(new CalculatedTax { PostalCode = _context.PostalCodes.Where(x => x.Value == postalCode).FirstOrDefault(), Value = calculatedTax, CreatedBy = "System", LastModifiedBy = "System", CreatedDate = DateTime.Now, LastModifiedDate = DateTime.Now });
+            _context.SaveChanges();
 
+            ViewData["calculatedTax"] = calculatedTax;
+
+            return View("Index", model);
+        }
 
         public IActionResult Privacy()
         {
