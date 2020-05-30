@@ -31,30 +31,21 @@ namespace TaxCalculator.Controllers
 
         public IActionResult Index()
         {
-            #region ViewBag 
-
-            List<SelectListItem> postCodes = new List<SelectListItem>();
-            _context.PostalCodes.ToList<PostalCode>().ForEach(x => postCodes.Add(new SelectListItem { Text = x.Value, Value = x.Value.ToString() }));
-
-            ViewBag.PostCodes = postCodes;
-
-            #endregion
-
-            return View();
+            return View(new InputModel { PostalCodes = _context.PostalCodes.Where(c => c.IsDeleted == false).Select(x => new SelectListItem { Text = x.Value, Value = x.Value }), ErrorLog = new StringBuilder() });
         }
 
         [HttpPost, ValidateAntiForgeryToken]
         public IActionResult CalculateTax(InputModel model)
         {
-            string postalCode = model.PostCode;
-            double annualIncome = model.AnnualIncome;
-
             StringBuilder errorLog = new StringBuilder();
+
+            string postalCode = model.SelectedPostalCode;
+            double annualIncome = model.AnnualIncome;
             double calculatedTax = 0;
 
             try
             {
-                switch (_context.TaxTypes.Where(x => x.TaxTypeID.Equals(_context.PostalCodes.Where(x => postalCode.Equals(x.Value)).FirstOrDefault().TaxTypeID)).FirstOrDefault().Code)
+                switch (_context.TaxTypes.Where(x => x.TaxTypeID.Equals(_context.PostalCodes.Where(x => postalCode.Equals(x.Value)).FirstOrDefault().TaxTypeID) && x.IsDeleted == false).FirstOrDefault().Code)
                 {
                     case "FLVL":
                         calculatedTax = annualIncome < 200000 ? calculatedTax = annualIncome * 0.05 : 10000;
@@ -97,10 +88,12 @@ namespace TaxCalculator.Controllers
             }
             catch (Exception e) { errorLog.Append(e.InnerException); }
 
-            _context.CalculatedTaxes.Add(new CalculatedTax { PostalCode = _context.PostalCodes.Where(x => x.Value == postalCode).FirstOrDefault(), Value = calculatedTax, CreatedBy = "System", LastModifiedBy = "System", CreatedDate = DateTime.Now, LastModifiedDate = DateTime.Now });
+            _context.CalculatedTaxes.Add(new CalculatedTax { PostalCode = _context.PostalCodes.Where(x => x.Value == postalCode && x.IsDeleted == false).FirstOrDefault(), Value = calculatedTax, CreatedBy = "System", LastModifiedBy = "System", CreatedDate = DateTime.Now, LastModifiedDate = DateTime.Now });
             _context.SaveChanges();
 
-            ViewData["calculatedTax"] = calculatedTax;
+            model.CalculatedTax = calculatedTax;
+            model.PostalCodes = _context.PostalCodes.Where(c => c.IsDeleted == false).Select(x => new SelectListItem { Text = x.Value, Value = x.Value });
+            model.ErrorLog = errorLog;
 
             return View("Index", model);
         }
@@ -108,7 +101,7 @@ namespace TaxCalculator.Controllers
         public IActionResult Privacy()
         {
             return View();
-        }
+        } 
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

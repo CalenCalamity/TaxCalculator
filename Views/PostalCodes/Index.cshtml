@@ -7,7 +7,7 @@
 <h1>Index</h1>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    <a asp-action="Create" class="btn btn-success">Create New</a>
 </p>
 <table class="table">
     <thead>
@@ -16,16 +16,10 @@
                 @Html.DisplayNameFor(model => model.Value)
             </th>
             <th>
+                @Html.DisplayNameFor(model => model.TaxTypeID)
+            </th>
+            <th>
                 @Html.DisplayNameFor(model => model.CreatedDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.LastModifiedDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.CreatedBy)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.LastModifiedBy)
             </th>
             <th></th>
         </tr>
@@ -37,21 +31,19 @@
                 @Html.DisplayFor(modelItem => item.Value)
             </td>
             <td>
+                @foreach (TaxType tax in ViewBag.TaxTypes)
+                {
+                    if(item.TaxTypeID == tax.TaxTypeID)
+                        @Html.Label(tax.Description)
+                }
+            </td>
+            <td>
                 @Html.DisplayFor(modelItem => item.CreatedDate)
-            </td>
+            </td> 
             <td>
-                @Html.DisplayFor(modelItem => item.LastModifiedDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.CreatedBy)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.LastModifiedBy)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.PostalCodeID">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.PostalCodeID">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.PostalCodeID">Delete</a>
+                <a asp-action="Edit" asp-route-id="@item.PostalCodeID" class="btn-sm btn-primary">Edit</a>
+                <a asp-action="Details" asp-route-id="@item.PostalCodeID" class="btn-sm btn-dark">Details</a>
+                <a asp-action="Delete" asp-route-id="@item.PostalCodeID" class="btn-sm btn-danger">Delete</a>
             </td>
         </tr>
 }

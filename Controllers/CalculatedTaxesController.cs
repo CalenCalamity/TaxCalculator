@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -22,23 +23,20 @@ namespace TaxCalculator.Controllers
         // GET: CalculatedTaxes
         public async Task<IActionResult> Index()
         {
-            return View(await _context.CalculatedTaxes.ToListAsync());
+            return View(await _context.CalculatedTaxes.Where(x => x.IsDeleted == false).ToListAsync());
         }
 
         // GET: CalculatedTaxes/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var calculatedTax = await _context.CalculatedTaxes
-                .FirstOrDefaultAsync(m => m.CalculatedTaxID == id);
+                .FirstOrDefaultAsync(m => m.CalculatedTaxID == id && m.IsDeleted == false);
+
             if (calculatedTax == null)
-            {
                 return NotFound();
-            }
 
             return View(calculatedTax);
         }
@@ -54,10 +52,13 @@ namespace TaxCalculator.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("CalculatedTaxID,Value,CreatedDate,LastModifiedDate,CreatedBy,LastModifiedBy")] CalculatedTax calculatedTax)
+        public async Task<IActionResult> Create([Bind("CalculatedTaxID,Value")] CalculatedTax calculatedTax)
         {
             if (ModelState.IsValid)
             {
+                calculatedTax.CreatedDate = calculatedTax.LastModifiedDate = DateTime.Now;
+                calculatedTax.CreatedBy = calculatedTax.LastModifiedBy = "System";
+
                 _context.Add(calculatedTax);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -69,15 +70,13 @@ namespace TaxCalculator.Controllers
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
-            var calculatedTax = await _context.CalculatedTaxes.FindAsync(id);
+            var calculatedTax = await _context.CalculatedTaxes.Where(x => x.CalculatedTaxID == id && x.IsDeleted == false).FirstOrDefaultAsync();
+
             if (calculatedTax == null)
-            {
                 return NotFound();
-            }
+
             return View(calculatedTax);
         }
 
@@ -86,30 +85,30 @@ namespace TaxCalculator.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("CalculatedTaxID,Value,CreatedDate,LastModifiedDate,CreatedBy,LastModifiedBy")] CalculatedTax calculatedTax)
+        public async Task<IActionResult> Edit(int id, [Bind("CalculatedTaxID,Value")] CalculatedTax calculatedTax)
         {
-            if (id != calculatedTax.CalculatedTaxID)
-            {
+            CalculatedTax updateRec = _context.CalculatedTaxes.Where(x => x.CalculatedTaxID == id && x.IsDeleted == false).FirstOrDefault();
+
+            if (id != calculatedTax.CalculatedTaxID | updateRec == null)
                 return NotFound();
-            }
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(calculatedTax);
+                    updateRec.Value = calculatedTax.Value;
+                    updateRec.LastModifiedBy = "System";
+                    updateRec.LastModifiedDate = DateTime.Now;
+
+                    _context.Update(updateRec);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
                     if (!CalculatedTaxExists(calculatedTax.CalculatedTaxID))
-                    {
                         return NotFound();
-                    }
                     else
-                    {
                         throw;
-                    }
                 }
                 return RedirectToAction(nameof(Index));
             }
@@ -120,16 +119,13 @@ namespace TaxCalculator.Controllers
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var calculatedTax = await _context.CalculatedTaxes
-                .FirstOrDefaultAsync(m => m.CalculatedTaxID == id);
+                .FirstOrDefaultAsync(m => m.CalculatedTaxID == id && m.IsDeleted == false);
+
             if (calculatedTax == null)
-            {
                 return NotFound();
-            }
 
             return View(calculatedTax);
         }
@@ -139,15 +135,19 @@ namespace TaxCalculator.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var calculatedTax = await _context.CalculatedTaxes.FindAsync(id);
-            _context.CalculatedTaxes.Remove(calculatedTax);
+            var calculatedTax = await _context.CalculatedTaxes.Where(x => x.CalculatedTaxID == id && x.IsDeleted == false).FirstOrDefaultAsync();
+
+            //Allow for soft Delete
+            calculatedTax.IsDeleted = true;
+            _context.CalculatedTaxes.Update(calculatedTax);
+
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool CalculatedTaxExists(int id)
         {
-            return _context.CalculatedTaxes.Any(e => e.CalculatedTaxID == id);
+            return _context.CalculatedTaxes.Any(e => e.CalculatedTaxID == id && e.IsDeleted == false);
         }
     }
 }
