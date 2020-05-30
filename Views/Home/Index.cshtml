@@ -3,31 +3,44 @@
 @{
     ViewBag.Title = "Calculator";
 }
-<h2>Create Visit</h2>
+<h2>Tax Calculator</h2>
 
-@using (Html.BeginForm("CalculateTax", "Home", FormMethod.Post))
-{
-    @Html.AntiForgeryToken()
-    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-    <div class="form-group">
-        @Html.LabelFor(model => model.PostCode, "Postal Code")
-        @Html.EditorFor(model => model.PostCode, new { htmlAttributes = new { @class = "form-control" } })
-        @Html.ValidationMessageFor(model => model.PostCode, "", new { @class = "text-danger" })
-    </div>
+<div class="col-md-4">
+    @using (Html.BeginForm("CalculateTax", "Home", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group">
+            @Html.LabelFor(model => model.SelectedPostalCode, "Postal Code")
+            @Html.DropDownListFor(m => m.SelectedPostalCode, Model.PostalCodes, new { @class = "form-control" })
+            @Html.ValidationMessageFor(model => model.SelectedPostalCode, "", new { @class = "text-danger" })
+        </div>
 
-    <div class="form-group">
-        @Html.LabelFor(model => model.AnnualIncome, "Annual Income")
-        @Html.EditorFor(model => model.AnnualIncome, new { htmlAttributes = new { @class = "form-control" } })
-        @Html.ValidationMessageFor(model => model.AnnualIncome, "", new { @class = "text-danger" })
-    </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.AnnualIncome, "Annual Income")
+            @Html.EditorFor(model => model.AnnualIncome, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.AnnualIncome, "", new { @class = "text-danger" })
+        </div>
 
-    <input type="submit" />
+        <input type="submit" class="btn btn-success" />
 
-    <div>
-        Result : @Html.TextBox("Result", ViewData["calculatedTax"])
-    </div>
-}
+        @if (Model.CalculatedTax != 0)
+        {
+            <div class="container" style="margin-top: 13%; border:double">
+                Result : @Html.Label(Model.CalculatedTax.ToString(), Model.CalculatedTax.ToString(), new { htmlAttributes = new { @class = "label label-default" } })
+            </div>
+         }
 
-<div>
-    @Html.ActionLink("Back to List", "Index")
-</div>
+        <br />
+        <br />
+
+        @if (Model.ErrorLog.Length > 0)
+        {
+            <div>
+                An error has ocurred, please view the details below :
+                <br />
+                @Html.Label(Model.ErrorLog.ToString())
+            </div>
+        }
+    }
+</div> 

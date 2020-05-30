@@ -4,48 +4,36 @@
     ViewData["Title"] = "Create";
 }
 
-<h1>Create</h1>
+<br />
 
-<h4>PostalCode</h4>
+<h3>Create Postal Code Record</h3>
 <hr />
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label asp-for="Value" class="control-label"></label>
+                <label asp-for="Value" class="control-label">Post Code</label>
                 <input asp-for="Value" class="form-control" />
                 <span asp-validation-for="Value" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="CreatedDate" class="control-label"></label>
-                <input asp-for="CreatedDate" class="form-control" />
-                <span asp-validation-for="CreatedDate" class="text-danger"></span>
+                <label asp-for="TaxTypeID" class="control-label">Tax Type</label>
+                <select asp-for="TaxTypeID" class="form-control">
+                    @foreach (TaxType item in ((IEnumerable<TaxType>)ViewData["TaxTypeList"]))
+                    {
+
+                        <option value="@item.TaxTypeID">@item.Description</option>
+                    }
+                </select>
+                <span asp-validation-for="TaxTypeID" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="LastModifiedDate" class="control-label"></label>
-                <input asp-for="LastModifiedDate" class="form-control" />
-                <span asp-validation-for="LastModifiedDate" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="CreatedBy" class="control-label"></label>
-                <input asp-for="CreatedBy" class="form-control" />
-                <span asp-validation-for="CreatedBy" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="LastModifiedBy" class="control-label"></label>
-                <input asp-for="LastModifiedBy" class="form-control" />
-                <span asp-validation-for="LastModifiedBy" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-dark">Back to List</a>
+                <input type="submit" value="Create" class="btn btn-success" />
             </div>
         </form>
     </div>
-</div>
-
-<div>
-    <a asp-action="Index">Back to List</a>
 </div>
 
 @section Scripts {
